@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐺 Wolf Pack Coaches Dashboard v2026-03-25-17:58</title>
-    <!-- FORCE CACHE REFRESH -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- VERSION TIMESTAMP: 2026-03-25-17:58 -->
+    <meta http-equiv="Last-Modified" content="Wed, 25 Mar 2026 09:48:00 GMT">
+    <title>🐺 Wolf Pack Coaching Hub - Railway v1.0</title>
+    <!-- Supabase Real-Time Client -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Wolf Pack Real-Time System -->
+    <script src="/assets/supabase-realtime.js"></script>
     <style>
         * {
             margin: 0;
@@ -18,1189 +21,626 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000;
-            color: #fff;
-            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
         }
 
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: #FDB80A;
-            color: #000;
-            padding: 12px 24px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 700;
-            z-index: 1000;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 80px 20px 40px;
-        }
-
-        /* Header */
-        .main-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        /* Navigation Bar */
-        .nav-bar {
+        /* LOGIN SCREEN */
+        .login-container-DISABLED {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .login-card {
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            min-width: 400px;
+        }
+
+        .wolf-logo {
+            font-size: 4rem;
             margin-bottom: 20px;
         }
 
-        .nav-btn {
-            background: #2A2A2B;
-            border: 2px solid #FDB80A;
-            color: #E3E1DE;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+        .login-card h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b35, #FDB80A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .nav-btn:hover {
-            background: #FDB80A;
-            color: #000;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(253, 184, 10, 0.4);
-        }
-
-        .nav-btn.active {
-            background: #FDB80A;
-            color: #000;
-        }
-
-        .main-header h1 {
-            font-size: 48px;
-            color: #FDB80A;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .view-only-banner {
-            background: #1a1a1a;
-            border: 1px solid #FDB80A;
-            padding: 12px 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #FDB80A;
-            margin-bottom: 30px;
-            border-radius: 6px;
-        }
-
-        /* Status Legend */
-        .status-legend {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 50px;
-            padding: 20px;
-            background: #0a0a0a;
-            border-radius: 8px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .legend-item.red { color: #dc2626; }
-        .legend-item.yellow { color: #eab308; }
-        .legend-item.green { color: #22c55e; }
-        .legend-item.blue { color: #3b82f6; }
-
-        /* Collapsible Section */
-        .collapsible-section {
-            margin-bottom: 30px;
-            border: 2px solid #FDB80A;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .section-header {
-            background: #1a1a1a;
-            padding: 20px 30px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-
-        .section-header:hover {
-            background: #222;
-        }
-
-        .section-header h2 {
-            font-size: 24px;
-            color: #FDB80A;
-            font-weight: 700;
-        }
-
-        .section-arrow {
-            font-size: 20px;
-            color: #FDB80A;
-            transition: transform 0.3s ease;
-        }
-
-        .collapsible-section.open .section-arrow {
-            transform: rotate(90deg);
-        }
-
-        .section-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .collapsible-section.open .section-content {
-            max-height: 5000px;
-        }
-
-        .section-inner {
-            padding: 40px 30px;
-        }
-
-        /* Overview Metrics */
-        .overview-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .overview-card {
-            background: #000;
-            border: 2px solid #FDB80A;
-            border-radius: 8px;
-            padding: 30px 20px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .overview-card h3 {
-            font-size: 16px;
-            color: #fff;
+        .form-group {
             margin-bottom: 20px;
-            font-weight: 600;
+            text-align: left;
         }
 
-        .overview-card .target {
-            font-size: 13px;
-            color: #888;
-        }
-
-        .overview-circle {
-            width: 120px;
-            height: 120px;
-            margin: 20px auto;
-            position: relative;
-        }
-
-        .overview-circle svg {
-            transform: rotate(-90deg);
-        }
-
-        .overview-circle circle {
-            fill: none;
-            stroke-width: 10;
-        }
-
-        .overview-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 28px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        /* Coach Card */
-        .coach-card {
-            background: #000;
-            border-top: 3px solid #FDB80A;
-            border-bottom: 3px solid #FDB80A;
-            padding: 30px 0;
-            margin-bottom: 30px;
-        }
-
-        .coach-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px 30px;
-        }
-
-        .coach-info h3 {
-            font-size: 28px;
-            color: #FDB80A;
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
-
-        .coach-info .role {
-            font-size: 12px;
-            color: #888;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .status-badge {
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .status-badge.needs-focus { background: #dc2626; color: #fff; }
-        .status-badge.on-track { background: #eab308; color: #000; }
-        .status-badge.healthy { background: #22c55e; color: #000; }
-        .status-badge.legendary { background: #3b82f6; color: #fff; }
-
-        /* Metrics Grid */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 20px;
-            padding: 0 30px;
-        }
-
-        .metric-card {
-            background: #000;
-            border: 2px solid #FDB80A;
-            border-radius: 8px;
-            padding: 30px 15px;
-            text-align: center;
-            min-height: 220px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .progress-circle {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 15px;
-            position: relative;
-        }
-
-        .progress-circle svg {
-            transform: rotate(-90deg);
-        }
-
-        .progress-circle circle {
-            fill: none;
-            stroke-width: 8;
-        }
-
-        .progress-bg { stroke: #1a1a1a; }
-
-        .progress-fill {
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.8s ease;
-        }
-
-        .progress-fill.green { stroke: #22c55e; }
-        .progress-fill.red { stroke: #dc2626; }
-        .progress-fill.yellow { stroke: #eab308; }
-        .progress-fill.blue { stroke: #3b82f6; }
-
-        .progress-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 22px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .metric-name {
-            font-size: 13px;
-            color: #fff;
+        .form-group label {
+            display: block;
             margin-bottom: 8px;
-            font-weight: 600;
+            font-weight: bold;
         }
 
-        .metric-target {
-            font-size: 11px;
-            color: #666;
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
         }
 
-        @media (max-width: 1200px) {
-            .overview-grid,
-            .metrics-grid {
-                grid-template-columns: repeat(3, 1fr);
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #ff6b35, #FDB80A);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(253, 184, 10, 0.4);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #22c55e;
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+        }
+
+        /* COACHING HUB DASHBOARD */
+        .hub {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .hub-header {
+            background: linear-gradient(90deg, #131313 0%, #0E0E0F 100%);
+            border-bottom: 3px solid #FDB80A;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(253, 184, 10, 0.2);
+        }
+
+        .hub-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .wolf-text {
+            color: #FDB80A;
+            text-shadow: 0 0 15px rgba(253, 184, 10, 0.4);
+        }
+
+        .hub-subtitle {
+            color: #E3E1DE;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .user-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(253, 184, 10, 0.1);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(253, 184, 10, 0.3);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FDB80A, #ff6b35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #0E0E0F;
+        }
+
+        .logout-btn {
+            margin-left: 20px;
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .hub-content {
+            flex: 1;
+            padding: 60px 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .dashboard-card {
+            background: linear-gradient(135deg, #2A2A2B 0%, #1F1F20 100%);
+            border: 2px solid #444;
+            border-radius: 20px;
+            padding: 50px 40px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #FDB80A, #FFD700);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .dashboard-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-12px);
+            border-color: #FDB80A;
+            box-shadow: 0 20px 60px rgba(253, 184, 10, 0.4);
+        }
+
+        .dashboard-icon {
+            font-size: 72px;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .dashboard-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #FDB80A;
+        }
+
+        .dashboard-description {
+            font-size: 15px;
+            color: #aaa;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        .dashboard-badge {
+            display: inline-block;
+            background: rgba(253, 184, 10, 0.15);
+            color: #FDB80A;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .admin-only {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .admin-only .dashboard-badge {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hub-header h1 {
+                font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Control Room removed - admins use controlroom-standalone -->
+    <!-- ALL LOGIN REMOVED - DIRECT ACCESS ONLY -->
 
-    <div class="container">
-        <!-- Main Header -->
-        <div class="main-header">
-            <!-- Navigation Bar -->
-            <div class="nav-bar">
-                <a href="/pipeline-standalone/" class="nav-btn">
-                    📊 Pipeline
+    <!-- Coaching Hub Dashboard -->
+    <div id="hub" class="hub" style="display: flex;">
+        <div class="hub-header">
+            <h1><span class="wolf-text">🐺 WOLF PACK</span> Coaching Hub</h1>
+            <p class="hub-subtitle">Team Performance & Pipeline Management</p>
+            <!-- User info removed -->
+        </div>
+
+        <div class="hub-content">
+            <div class="dashboard-grid">
+                <!-- Pipeline Dashboard -->
+                <a href="/pipeline/" class="dashboard-card">
+                    <span class="dashboard-icon">📈</span>
+                    <div class="dashboard-title">Pipeline Dashboard</div>
+                    <div class="dashboard-description">
+                        Track student progress through 14 coaching stages with 90-day tracker, real-time updates, and Airtable sync.
+                    </div>
+                    <span class="dashboard-badge">Student Tracking</span>
                 </a>
-                <a href="/coaches-standalone/" class="nav-btn active">
-                    👥 Coaches
+
+                <!-- Coaches Dashboard -->
+                <a href="/coaches/" class="dashboard-card">
+                    <span class="dashboard-icon">👥</span>
+                    <div class="dashboard-title">Coaches Dashboard</div>
+                    <div class="dashboard-description">
+                        Coach-level KPIs: student satisfaction, graduation rates, revenue impact, placement rates, and time metrics.
+                    </div>
+                    <span class="dashboard-badge">Team Analytics</span>
                 </a>
-                <a href="/coaching/" class="nav-btn">
-                    🐺 Coaching Hub
-                </a>
-            </div>
-            <h1>WOLF PACK COACHES DASHBOARD</h1>
-        </div>
 
-        <!-- View Only Banner -->
-        <div class="view-only-banner">
-            🔒 VIEW ONLY - Performance tracking and analytics
-        </div>
-
-        <!-- Status Legend -->
-        <div class="status-legend">
-            <div class="legend-item red">🔴 &lt;80% NEEDS FOCUS</div>
-            <div class="legend-item yellow">🟡 80-99% ON TRACK</div>
-            <div class="legend-item green">🟢 100-104% HEALTHY</div>
-            <div class="legend-item blue">🔵 &gt;105% LEGENDARY</div>
-        </div>
-
-        <!-- Overview Section -->
-        <div class="collapsible-section open" id="overview">
-            <div class="section-header" onclick="toggleSection('overview')">
-                <h2>WOLF PACK COACHES OVERVIEW</h2>
-                <span class="section-arrow">▸</span>
-            </div>
-            <div class="section-content">
-                <div class="section-inner">
-                    <div class="overview-grid">
-                        <div class="overview-card">
-                            <h3>Student Satisfaction</h3>
-                            <div class="overview-circle">
-                                <svg viewBox="0 0 120 120">
-                                    <circle class="progress-bg" cx="60" cy="60" r="52"></circle>
-                                    <circle class="progress-fill yellow" cx="60" cy="60" r="52" 
-                                            stroke-dasharray="326.56" stroke-dashoffset="3"></circle>
-                                </svg>
-                                <div class="overview-value">99%</div>
-                            </div>
-                            <div class="target">Target: 4.5/5</div>
-                        </div>
-                        <div class="overview-card">
-                            <h3>Graduation Rate</h3>
-                            <div class="overview-circle">
-                                <svg viewBox="0 0 120 120">
-                                    <circle class="progress-bg" cx="60" cy="60" r="52"></circle>
-                                    <circle class="progress-fill red" cx="60" cy="60" r="52" 
-                                            stroke-dasharray="326.56" stroke-dashoffset="294"></circle>
-                                </svg>
-                                <div class="overview-value">10%</div>
-                            </div>
-                            <div class="target">Target: 80% (8 / 85 students)</div>
-                        </div>
-                        <div class="overview-card">
-                            <h3>Wolf Revenue</h3>
-                            <div class="overview-circle">
-                                <svg viewBox="0 0 120 120">
-                                    <circle class="progress-bg" cx="60" cy="60" r="52"></circle>
-                                    <circle class="progress-fill red" cx="60" cy="60" r="52" 
-                                            stroke-dasharray="326.56" stroke-dashoffset="326.56"></circle>
-                                </svg>
-                                <div class="overview-value">0%</div>
-                            </div>
-                            <div class="target">Target: €80,000</div>
-                        </div>
-                        <div class="overview-card">
-                            <h3>Placement Rate</h3>
-                            <div class="overview-circle">
-                                <svg viewBox="0 0 120 120">
-                                    <circle class="progress-bg" cx="60" cy="60" r="52"></circle>
-                                    <circle class="progress-fill red" cx="60" cy="60" r="52" 
-                                            stroke-dasharray="326.56" stroke-dashoffset="326.56"></circle>
-                                </svg>
-                                <div class="overview-value">0%</div>
-                            </div>
-                            <div class="target">Target: 70%</div>
-                        </div>
-                        <div class="overview-card">
-                            <h3>Time to First Deal</h3>
-                            <div class="overview-circle">
-                                <svg viewBox="0 0 120 120">
-                                    <circle class="progress-bg" cx="60" cy="60" r="52"></circle>
-                                    <circle class="progress-fill red" cx="60" cy="60" r="52" 
-                                            stroke-dasharray="326.56" stroke-dashoffset="326.56"></circle>
-                                </svg>
-                                <div class="overview-value">0%</div>
-                            </div>
-                            <div class="target">Target: 30 days</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Charts Section -->
-        <div class="collapsible-section" id="charts">
-            <div class="section-header" onclick="toggleSection('charts')">
-                <h2>PERFORMANCE CHARTS</h2>
-                <span class="section-arrow">▸</span>
-            </div>
-            <div class="section-content">
-                <div class="section-inner">
-                    <p style="color: #888; text-align: center;">Charts coming soon...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Head of Delivery Section -->
-        <div class="collapsible-section open" id="hod">
-            <div class="section-header" onclick="toggleSection('hod')">
-                <h2>HEAD OF DELIVERY</h2>
-                <span class="section-arrow">▸</span>
-            </div>
-            <div class="section-content">
-                <div class="section-inner">
-                    <!-- Lorenzo -->
-                    <div class="coach-card" data-coach="lorenzo">
-                        <div class="coach-header">
-                            <div class="coach-info">
-                                <h3>Lorenzo Kleijn</h3>
-                                <div class="role">HEAD OF DELIVERY</div>
-                            </div>
-                            <div class="status-badge on-track">🟡 ON TRACK</div>
-                        </div>
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill yellow" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="3"></circle>
-                                    </svg>
-                                    <div class="progress-value">99%</div>
-                                </div>
-                                <div class="metric-name">Student Satisfaction</div>
-                                <div class="metric-target">Target: 4.5/5</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Graduation Rate</div>
-                                <div class="metric-target">Target: 80%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Wolf Revenue</div>
-                                <div class="metric-target">Target: €80,000</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Placement Rate</div>
-                                <div class="metric-target">Target: 70%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Time to First Deal</div>
-                                <div class="metric-target">Target: 30 days</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Coaches Section -->
-        <div class="collapsible-section open" id="coaches">
-            <div class="section-header" onclick="toggleSection('coaches')">
-                <h2>👨‍🏫 COACHES</h2>
-                <span class="section-arrow">▸</span>
-            </div>
-            <div class="section-content">
-                <div class="section-inner">
-                    <!-- Dilano -->
-                    <div class="coach-card" data-coach="dilano">
-                        <div class="coach-header">
-                            <div class="coach-info">
-                                <h3>Dilano</h3>
-                                <div class="role">COACH</div>
-                            </div>
-                            <div class="status-badge needs-focus">🔴 NEEDS FOCUS</div>
-                        </div>
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill green" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="0"></circle>
-                                    </svg>
-                                    <div class="progress-value">105%</div>
-                                </div>
-                                <div class="metric-name">Student Satisfaction</div>
-                                <div class="metric-target">Target: 4.5/5</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Graduation Rate</div>
-                                <div class="metric-target">Target: 80%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Wolf Revenue</div>
-                                <div class="metric-target">Target: €50,000</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Placement Rate</div>
-                                <div class="metric-target">Target: 70%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Time to First Deal</div>
-                                <div class="metric-target">Target: 30 days</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Eray -->
-                    <div class="coach-card" data-coach="eray">
-                        <div class="coach-header">
-                            <div class="coach-info">
-                                <h3>Eray</h3>
-                                <div class="role">COACH</div>
-                            </div>
-                            <div class="status-badge needs-focus">🔴 NEEDS FOCUS</div>
-                        </div>
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill blue" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="0"></circle>
-                                    </svg>
-                                    <div class="progress-value">107%</div>
-                                </div>
-                                <div class="metric-name">Student Satisfaction</div>
-                                <div class="metric-target">Target: 4.5/5</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Graduation Rate</div>
-                                <div class="metric-target">Target: 80%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Wolf Revenue</div>
-                                <div class="metric-target">Target: €50,000</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Placement Rate</div>
-                                <div class="metric-target">Target: 70%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Time to First Deal</div>
-                                <div class="metric-target">Target: 30 days</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Maurice -->
-                    <div class="coach-card" data-coach="maurice">
-                        <div class="coach-header">
-                            <div class="coach-info">
-                                <h3>Maurice</h3>
-                                <div class="role">COACH</div>
-                            </div>
-                            <div class="status-badge needs-focus">🔴 NEEDS FOCUS</div>
-                        </div>
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill green" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="6"></circle>
-                                    </svg>
-                                    <div class="progress-value">102%</div>
-                                </div>
-                                <div class="metric-name">Student Satisfaction</div>
-                                <div class="metric-target">Target: 4.5/5</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Graduation Rate</div>
-                                <div class="metric-target">Target: 80%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Wolf Revenue</div>
-                                <div class="metric-target">Target: €60,000</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Placement Rate</div>
-                                <div class="metric-target">Target: 70%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Time to First Deal</div>
-                                <div class="metric-target">Target: 30 days</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Nabil -->
-                    <div class="coach-card" data-coach="nabil">
-                        <div class="coach-header">
-                            <div class="coach-info">
-                                <h3>Nabil</h3>
-                                <div class="role">COACH</div>
-                            </div>
-                            <div class="status-badge needs-focus">🔴 NEEDS FOCUS</div>
-                        </div>
-                        <div class="metrics-grid">
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill yellow" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="28"></circle>
-                                    </svg>
-                                    <div class="progress-value">90%</div>
-                                </div>
-                                <div class="metric-name">Student Satisfaction</div>
-                                <div class="metric-target">Target: 4.5/5</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Graduation Rate</div>
-                                <div class="metric-target">Target: 80%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Wolf Revenue</div>
-                                <div class="metric-target">Target: €60,000</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Placement Rate</div>
-                                <div class="metric-target">Target: 70%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="progress-circle">
-                                    <svg viewBox="0 0 100 100">
-                                        <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                                        <circle class="progress-fill red" cx="50" cy="50" r="45" 
-                                                stroke-dasharray="283" stroke-dashoffset="283"></circle>
-                                    </svg>
-                                    <div class="progress-value">0%</div>
-                                </div>
-                                <div class="metric-name">Time to First Deal</div>
-                                <div class="metric-target">Target: 30 days</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Control Room will be added via JavaScript ONLY for admins -->
             </div>
         </div>
     </div>
 
     <script>
-        function toggleSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            section.classList.toggle('open');
+        let currentCoach = null;
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            msg.style.display = 'block';
         }
 
-        // Coach assignments (same as pipeline)
-        const coachAssignments = {
-            'Jasper van den Elsen': 'melvin', 'Hidde Basten': 'melvin', 'Juliet Willemsen': 'melvin',
-            'Jaime Stoop': 'melvin', 'Jim den Drijver': 'melvin', 'Alen Arnautovic': 'melvin',
-            'Oscar Klompmaker': 'melvin', 'Mustafa Aglah': 'melvin', 'Rutger Van Cammen': 'melvin',
-            'Ricardo Croes': 'melvin', 'Laurens Huysentruyt': 'melvin', 'Thomas Capanni': 'melvin',
-            'Marsel Naimanbaev': 'melvin', 'Bram de Veer': 'melvin', 'Thijmen De Grauw': 'melvin',
-            'Jelle': 'melvin', 'Moya Jaquet': 'melvin', 'Jochem Schellings': 'melvin',
-            'Maurice Visser': 'melvin',
-
-            'Eray Erdayi': 'eray', 'Mick Schraepler': 'eray', 'Damian Spaaij': 'eray',
-            'Calvin Arendse': 'eray', 'Shoaib Jamal': 'eray', 'Livian Simons': 'eray',
-            'Illias Sabbahi': 'eray', 'Dilano Joshua': 'eray', 'Julian Smissaert': 'eray',
-            'Arno Menting': 'eray', 'Max Kaptein': 'eray', 'Elmar Ahmadi': 'eray',
-            'Teun Bijnsdorp': 'eray', 'Yesser Daass': 'eray', 'Kyle Dowling': 'eray',
-
-            'Luca Groot': 'maurice', 'Nathan Wisse': 'maurice', 'Melissa Bos': 'maurice',
-            'Len Gerards': 'maurice', 'Joost Lievense': 'maurice', 'Branco van Peer': 'maurice',
-            'Pepijn van Wieren': 'maurice', 'Haron Zarouala': 'maurice', 'Coco Latumahina': 'maurice',
-            'Kevin van Wuyckhuyse': 'maurice', 'Dylan Autar': 'maurice', 'Thijs Bouchaut': 'maurice',
-            'Jim Koning': 'maurice', 'Micha ter Beek': 'maurice', 'Ninschar Arun': 'maurice',
-            'Jeffrey Schoonenberg': 'maurice', 'Sam Timmers': 'maurice', 'Quint Van Beek': 'maurice',
-
-            'Krishna Chabboe': 'nabil', 'Luuk Warnas': 'nabil', 'Szymon Opieczonek': 'nabil',
-            'Musa Kaya': 'nabil', 'Sem Bonvarlet': 'nabil', 'Brian Onuoha': 'nabil',
-            'Rose Chidlow': 'nabil', 'Yassir Douhou': 'nabil', 'John Akkerman': 'nabil',
-            'Jeroen Ramakers': 'nabil', 'Jimi van Gestel': 'nabil', 'Isabella Nicholson': 'nabil',
-            'Imran Aslan': 'nabil', 'Frank Verduyn': 'nabil', 'Karl Addy Barandagiye': 'nabil',
-            'Yvar Schonis': 'nabil', 'Wesley Ipersum': 'nabil',
-
-            'Devin Scholtens': 'dilano', 'Micky Beurskens': 'dilano', 'Damian Mac Intosch': 'dilano',
-            'Raayshree Khemai': 'dilano', 'Gijs Waasdorp': 'dilano', 'Tim Otten': 'dilano',
-            'Laura van Kesteren': 'dilano', 'Nino Noordanus': 'dilano', 'Matthias Vandermaes': 'dilano'
-        };
-
-        // COMPLETE Wolf Revenue data - ALL 776 DEALS ANALYZED 🔥
-        const wolfRevenue = {
-            maurice: { revenue: 787865, target: 50000 },   // Joost €414K + Maurice's own €373K = 1576% of target! 🚀
-            eray: { revenue: 1012330, target: 50000 },     // Damian €308K + Mustafa €250K + Calvin €70K + Eray's own €383K = 2025% of target! 🔥
-            dilano: { revenue: 162895, target: 50000 },    // Dilano's own deals = 326% of target 💪
-            nabil: { revenue: 52492, target: 50000 },      // Nabil's tracked deals = 105% of target ✅
-            melvin: { revenue: 0, target: 80000 }          // Lorenzo/Head of Delivery
-        };
-
-        // Student Satisfaction from Airtable Feedback (Overall satisfaction ratings)
-        const studentSatisfaction = {
-            maurice: 97,   // 4.83/5 from 12 ratings
-            dilano: 95,    // 4.75/5 from 4 ratings (Nano in Airtable)
-            eray: 92,      // 4.60/5 from 5 ratings
-            nabil: 71,     // 3.57/5 from 7 ratings
-            melvin: 89     // Average of all coaches (Head of Delivery)
-        };
-
-        // Calculate live metrics from pipeline data
-        function calculateCoachMetrics() {
-            const pipelineData = JSON.parse(localStorage.getItem('wolfPackPipeline') || '{}');
-            
-            const metrics = {
-                melvin: { total: 0, graduated: 0, active: 0, onHold: 0 },
-                eray: { total: 0, graduated: 0, active: 0, onHold: 0 },
-                maurice: { total: 0, graduated: 0, active: 0, onHold: 0 },
-                nabil: { total: 0, graduated: 0, active: 0, onHold: 0 },
-                dilano: { total: 0, graduated: 0, active: 0, onHold: 0 }
+        async function syncLoginData(coach, loginTime) {
+            const loginData = {
+                coach_name: coach.name,
+                role: coach.role,
+                login_time: loginTime,
+                dashboard_type: 'coaching_hub',
+                user_agent: navigator.userAgent,
+                timestamp: new Date().toISOString()
             };
-
-            // Graduation stages: Graduated, Trial Month, Active Closer
-            const graduationStages = ['Graduated - Green Group', 'Trial Month', 'Active Closer'];
             
-            // Count students per coach per stage
-            for (const [stage, students] of Object.entries(pipelineData)) {
-                if (!Array.isArray(students)) continue;
+            try {
+                const existingLogs = JSON.parse(localStorage.getItem('wolf_login_logs') || '[]');
+                existingLogs.push(loginData);
+                localStorage.setItem('wolf_login_logs', JSON.stringify(existingLogs));
+                console.log('📊 Coaching Hub login synced:', loginData);
+            } catch (error) {
+                console.error('Sync error:', error);
+            }
+        }
+
+        function login(name, code) {
+            console.log('🔧 Coaching Hub Login:', name, code);
+            
+            showMessage('Logging in...', 'success');
+            
+            const validLogins = {
+                'melvin': { code: 'melvin2026', role: 'admin' },
+                'maurice': { code: 'maurice2026', role: 'coach' },
+                'nabil': { code: 'nabil2026', role: 'coach' },
+                'eray': { code: 'eray2026', role: 'coach' },
+                'dilano': { code: 'dilano2026', role: 'coach' },
+                'lorenzo': { code: 'lorenzo2026', role: 'admin' }
+            };
+            
+            const lowerName = name.toLowerCase().trim();
+            const trimmedCode = code.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            if (validLogins[lowerName] && validLogins[lowerName].code === trimmedCode) {
+                currentCoach = {
+                    name: name,
+                    role: validLogins[lowerName].role,
+                    loginTime: new Date().toISOString()
+                };
                 
-                students.forEach(student => {
-                    const coach = coachAssignments[student];
-                    if (!coach || !metrics[coach]) return;
-                    
-                    metrics[coach].total++;
-                    
-                    // Graduated = Graduated + Trial Month + Active Closer
-                    if (graduationStages.includes(stage)) {
-                        metrics[coach].graduated++;
-                    }
-                    
-                    // Active = only Active Closer stage
-                    if (stage === 'Active Closer') {
-                        metrics[coach].active++;
-                    } else if (stage === 'ON HOLD') {
-                        metrics[coach].onHold++;
-                    }
-                });
-            }
-
-            return metrics;
-        }
-
-        // Update dashboard with live data
-        function updateDashboard() {
-            const metrics = calculateCoachMetrics();
-            
-            console.log('📊 Live Coach Metrics:', metrics);
-            
-            // Update Lorenzo (Head of Delivery = melvin)
-            updateCoachCard('lorenzo', metrics.melvin);
-            
-            // Update all coaches
-            updateCoachCard('dilano', metrics.dilano);
-            updateCoachCard('eray', metrics.eray);
-            updateCoachCard('maurice', metrics.maurice);
-            updateCoachCard('nabil', metrics.nabil);
-            
-            // Update overview (Lorenzo's data)
-            updateOverview(metrics.melvin);
-        }
-        
-        function updateOverview(lorenzoMetrics) {
-            const total = lorenzoMetrics.total;
-            const graduated = lorenzoMetrics.graduated;
-            const active = lorenzoMetrics.active;
-            
-            // Calculate all 5 metrics (same as Lorenzo)
-            const satisfactionPct = studentSatisfaction.melvin; // From Airtable Feedback
-            const gradRate = total > 0 ? Math.round((graduated / total) * 100) : 0;
-            const revenuePct = Math.round((wolfRevenue.melvin.revenue / wolfRevenue.melvin.target) * 100);
-            const placementRate = total > 0 ? Math.round((active / total) * 100) : 0;
-            const timeToFirstDeal = 0; // Placeholder
-            
-            console.log('📊 OVERVIEW (Lorenzo):', {
-                total,
-                graduated,
-                active,
-                satisfactionPct: `${satisfactionPct}%`,
-                gradRate: `${gradRate}%`,
-                placementRate: `${placementRate}%`
-            });
-            
-            // Update all 5 overview circles
-            updateOverviewCircle(0, satisfactionPct, 'Student Satisfaction', null, total);
-            updateOverviewCircle(1, gradRate, 'Graduation Rate', graduated, total);
-            updateOverviewCircle(2, revenuePct, 'Wolf Revenue', null, total);
-            updateOverviewCircle(3, placementRate, 'Placement Rate', active, total);
-            updateOverviewCircle(4, timeToFirstDeal, 'Time to First Deal', null, total);
-        }
-        
-        function updateOverviewCircle(index, percentage, label, count, total) {
-            const overviewCards = document.querySelectorAll('.overview-card');
-            if (index >= overviewCards.length) return;
-            
-            const card = overviewCards[index];
-            const circle = card.querySelector('.progress-fill');
-            const value = card.querySelector('.overview-value');
-            const targetDiv = card.querySelector('.target');
-            
-            if (!circle || !value) return;
-            
-            // Update value
-            value.textContent = percentage + '%';
-            
-            // Update target text with count for Graduation Rate (index 1) and Placement Rate (index 3)
-            if (targetDiv && count !== null && total > 0) {
-                if (index === 1) { // Graduation Rate
-                    targetDiv.textContent = `Target: 80% (${count}/${total} studenten)`;
-                } else if (index === 3) { // Placement Rate
-                    targetDiv.textContent = `Target: 70% (${count}/${total} studenten)`;
+                if (rememberMe) {
+                    localStorage.setItem('wolf_remembered_coaching', JSON.stringify({
+                        name: name,
+                        code: code,
+                        role: validLogins[lowerName].role,
+                        expiry: Date.now() + (30 * 24 * 60 * 60 * 1000)
+                    }));
+                    console.log('💾 Coaching Hub user saved for auto-login');
                 }
-            }
-            
-            // Update color
-            circle.classList.remove('red', 'yellow', 'green', 'blue');
-            if (percentage === 0) circle.classList.add('red');
-            else if (percentage < 80) circle.classList.add('red');
-            else if (percentage < 100) circle.classList.add('yellow');
-            else if (percentage <= 104) circle.classList.add('green');
-            else circle.classList.add('blue');
-            
-            // Update circle progress (326.56 = circumference for r=52)
-            const offset = 326.56 - (percentage / 100 * 326.56);
-            circle.setAttribute('stroke-dashoffset', offset);
-        }
-        
-        function updateCoachCard(coachId, metrics) {
-            const card = document.querySelector(`[data-coach="${coachId}"]`);
-            if (!card) {
-                console.warn(`⚠️ Coach card not found: ${coachId}`);
+                
+                syncLoginData(currentCoach, currentCoach.loginTime);
+                
+                // Save session for cross-dashboard navigation - BOTH SYSTEMS
+                if (window.WolfSession) {
+                    window.WolfSession.saveSession(currentCoach);
+                }
+                if (window.WolfSharedSession) {
+                    window.WolfSharedSession.saveLogin(currentCoach);
+                }
+                
+                showMessage('Login successful!', 'success');
+                setTimeout(() => {
+                    showHub();
+                    initializeCrmEngine();
+                }, 500);
                 return;
             }
             
-            const total = metrics.total;
-            const graduated = metrics.graduated;
-            const active = metrics.active;
+            showMessage('Invalid credentials! Contact admin.', 'error');
+        }
+
+        function showHub() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('hub').style.display = 'flex';
             
-            // Calculate percentages
-            const satisfactionPct = studentSatisfaction[coachId] || 0; // From Airtable Feedback
-            const gradRate = total > 0 ? Math.round((graduated / total) * 100) : 0;
-            const coachRevenue = wolfRevenue[coachId] || { revenue: 0, target: 50000 };
-            const revenuePct = Math.round((coachRevenue.revenue / coachRevenue.target) * 100);
-            const placementRate = total > 0 ? Math.round((active / total) * 100) : 0;
-            const timeToFirstDeal = 0; // Placeholder
+            document.getElementById('userName').textContent = currentCoach.name;
+            document.getElementById('userRole').textContent = currentCoach.role === 'admin' ? 'Administrator' : 'Coach';
+            document.getElementById('userAvatar').textContent = currentCoach.name.charAt(0).toUpperCase();
             
-            console.log(`🐺 ${coachId.toUpperCase()}:`, {
-                total,
-                graduated,
-                active,
-                gradRate: `${gradRate}%`,
-                placementRate: `${placementRate}%`
-            });
+            // Add Control Room card ONLY for admins (Melvin + Lorenzo)
+            const isAdmin = currentCoach.role === 'admin' && 
+                           (currentCoach.name.toLowerCase() === 'melvin' || 
+                            currentCoach.name.toLowerCase() === 'lorenzo');
             
-            // Update all 5 metrics
-            const metrics5 = [satisfactionPct, gradRate, revenuePct, placementRate, timeToFirstDeal];
-            const metricCards = card.querySelectorAll('.metric-card');
-            
-            if (metricCards.length !== 5) {
-                console.warn(`⚠️ Expected 5 metric cards for ${coachId}, found ${metricCards.length}`);
+            if (isAdmin) {
+                // Create Control Room card dynamically with access warning
+                const dashboardGrid = document.querySelector('.dashboard-grid');
+                const controlCard = document.createElement('a');
+                controlCard.href = '../controlroom-standalone/';
+                // Open in same tab
+                // controlCard.target = '_blank';
+                controlCard.className = 'dashboard-card';
+                
+                // Add click confirmation for extra security
+                controlCard.addEventListener('click', function(e) {
+                    if (!confirm('🔒 ADMIN ACCESS: Are you sure you want to access the Control Room? This area contains sensitive system controls.')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+                
+                controlCard.innerHTML = `
+                    <span class="dashboard-icon">🏠</span>
+                    <div class="dashboard-title">Control Room</div>
+                    <div class="dashboard-description">
+                        System administration, user management, and advanced configuration settings for Wolf Pack infrastructure.
+                        <br><strong style="color: #ff6b35;">⚠️ ADMIN ONLY</strong>
+                    </div>
+                    <span class="dashboard-badge">Admin Access</span>
+                `;
+                dashboardGrid.appendChild(controlCard);
+                console.log('✅ Control Room access granted for:', currentCoach.name);
+            } else {
+                console.log('❌ Control Room access denied for:', currentCoach.name);
+                
+                // Extra security: Clear any Control Room remember-me data for coaches
+                localStorage.removeItem('wolf_remembered_control');
+                localStorage.removeItem('wolf_remembered_controlroom');
+            }
+        }
+
+        function logout() {
+            const saved = localStorage.getItem('wolf_remembered_coaching');
+            if (saved && confirm('Stay logged in for next time?')) {
+                console.log('💾 Keeping Coaching Hub Remember Me');
+            } else {
+                localStorage.removeItem('wolf_remembered_coaching');
+                console.log('🗑️ Cleared Coaching Hub Remember Me');
             }
             
-            metricCards.forEach((metricCard, idx) => {
-                const percentage = metrics5[idx];
-                const circle = metricCard.querySelector('.progress-fill');
-                const value = metricCard.querySelector('.progress-value');
-                const metricName = metricCard.querySelector('.metric-name');
-                const metricTarget = metricCard.querySelector('.metric-target');
-                
-                if (!circle || !value) {
-                    console.warn(`⚠️ Missing elements in metric ${idx} for ${coachId}`);
+            // Clear both session systems
+            if (window.WolfSession) {
+                window.WolfSession.clearSession();
+            }
+            if (window.WolfSharedSession) {
+                window.WolfSharedSession.clearLogin();
+            }
+            
+            currentCoach = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('hub').style.display = 'none';
+            document.getElementById('message').style.display = 'none';
+            document.getElementById('coachName').value = '';
+            document.getElementById('loginCode').value = '';
+            document.getElementById('rememberMe').checked = false;
+        }
+
+        function checkAutoLogin() {
+            // PRIORITY 1: Check shared session from other dashboards - MELVIN'S FIX
+            if (window.WolfSharedSession && window.WolfSharedSession.isLoggedIn()) {
+                const sharedLogin = window.WolfSharedSession.getLogin();
+                if (sharedLogin) {
+                    console.log('🔄 Coaching Hub found shared login:', sharedLogin.name);
+                    
+                    currentCoach = {
+                        name: sharedLogin.name,
+                        role: sharedLogin.role,
+                        loginTime: sharedLogin.loginTime
+                    };
+                    
+                    syncLoginData(currentCoach, currentCoach.loginTime);
+                    
+                    // Also save to WolfSession for consistency
+                    if (window.WolfSession) {
+                        window.WolfSession.saveSession(currentCoach);
+                    }
+                    
+                    showMessage('Welcome back, ' + sharedLogin.name + '! (shared login)', 'success');
+                    setTimeout(() => {
+                        showHub();
+                        initializeCrmEngine();
+                    }, 800);
                     return;
                 }
-                
-                // Update value
-                value.textContent = percentage + '%';
-                
-                // Update Graduation Rate target with count (idx 1)
-                if (idx === 1 && metricTarget && total > 0) {
-                    metricTarget.textContent = `Target: 80% (${graduated}/${total} studenten)`;
-                }
-                
-                // Update Placement Rate target with count (idx 3)
-                if (idx === 3 && metricTarget && total > 0) {
-                    metricTarget.textContent = `Target: 70% (${active}/${total} studenten)`;
-                }
-                
-                // Update Wolf Revenue label with actual amount
-                if (idx === 2 && metricName && coachRevenue.revenue > 0) {
-                    const formatted = new Intl.NumberFormat('nl-NL', { 
-                        style: 'currency', 
-                        currency: 'EUR',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(coachRevenue.revenue);
-                    metricName.textContent = `Wolf Revenue (${formatted})`;
-                }
-                
-                // Update color
-                circle.classList.remove('red', 'yellow', 'green', 'blue');
-                if (percentage === 0) circle.classList.add('red');
-                else if (percentage < 80) circle.classList.add('red');
-                else if (percentage < 100) circle.classList.add('yellow');
-                else if (percentage <= 104) circle.classList.add('green');
-                else circle.classList.add('blue');
-                
-                // Update progress (283 = circumference for r=45)
-                const offset = 283 - (percentage / 100 * 283);
-                circle.setAttribute('stroke-dashoffset', offset);
-            });
+            }
             
-            // Update status badge
-            const badge = card.querySelector('.status-badge');
-            if (badge) {
-                badge.className = 'status-badge';
-                const avgScore = (gradRate + placementRate) / 2;
-                
-                if (avgScore < 30) {
-                    badge.classList.add('needs-focus');
-                    badge.textContent = '🔴 NEEDS FOCUS';
-                } else if (avgScore < 60) {
-                    badge.classList.add('on-track');
-                    badge.textContent = '🟡 ON TRACK';
-                } else if (avgScore <= 80) {
-                    badge.classList.add('healthy');
-                    badge.textContent = '🟢 HEALTHY';
-                } else {
-                    badge.classList.add('legendary');
-                    badge.textContent = '🔵 LEGENDARY';
+            // PRIORITY 2: Check coaching-specific remember me
+            const saved = localStorage.getItem('wolf_remembered_coaching');
+            if (saved) {
+                try {
+                    const userData = JSON.parse(saved);
+                    
+                    if (Date.now() < userData.expiry) {
+                        console.log('🔄 Coaching Hub auto-login:', userData.name);
+                        
+                        document.getElementById('coachName').value = userData.name;
+                        document.getElementById('loginCode').value = userData.code;
+                        document.getElementById('rememberMe').checked = true;
+                        
+                        currentCoach = {
+                            name: userData.name,
+                            role: userData.role,
+                            loginTime: new Date().toISOString()
+                        };
+                        
+                        syncLoginData(currentCoach, currentCoach.loginTime);
+                        
+                        // Save session for cross-dashboard navigation
+                        if (window.WolfSession) {
+                            window.WolfSession.saveSession(currentCoach);
+                        }
+                        
+                        showMessage('Welcome back, ' + userData.name + '!', 'success');
+                        setTimeout(() => {
+                            showHub();
+                            initializeCrmEngine();
+                        }, 1000);
+                        return;
+                    } else {
+                        localStorage.removeItem('wolf_remembered_coaching');
+                    }
+                } catch (error) {
+                    localStorage.removeItem('wolf_remembered_coaching');
                 }
             }
         }
 
-        function updateMetricCircle(id, percentage, count, total) {
-            const circle = document.querySelector(`#${id} circle.progress-fill`);
-            const value = document.querySelector(`#${id} .overview-value`);
-            const target = document.querySelector(`#${id} .target`);
-            
-            if (!circle || !value) return;
-            
-            // Update percentage
-            value.textContent = percentage + '%';
-            
-            // Update target text
-            if (target && count !== undefined && total !== undefined) {
-                target.textContent = `Target: 80% (${count} / ${total} students)`;
-            }
-            
-            // Update circle color
-            circle.classList.remove('red', 'yellow', 'green', 'blue');
-            if (percentage < 80) circle.classList.add('red');
-            else if (percentage < 100) circle.classList.add('yellow');
-            else if (percentage <= 104) circle.classList.add('green');
-            else circle.classList.add('blue');
-            
-            // Update circle progress (326.56 = full circle circumference)
-            const offset = 326.56 - (percentage / 100 * 326.56);
-            circle.setAttribute('stroke-dashoffset', offset);
-        }
-
-        // Add IDs to overview cards for easy updates
-        document.addEventListener('DOMContentLoaded', () => {
-            const gradCard = document.querySelectorAll('.overview-card')[1];
-            if (gradCard) {
-                gradCard.querySelector('.overview-circle').id = 'overview-grad';
-            }
-            
-            // Initial update
-            updateDashboard();
-            
-            // Auto-refresh every 5 seconds
-            setInterval(updateDashboard, 5000);
-            
-            console.log('🐺 Wolf Pack Coaches Dashboard - LIVE MODE ACTIVATED!');
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('coachName').value.trim();
+            const code = document.getElementById('loginCode').value.trim();
+            login(name, code);
         });
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
+                e.preventDefault();
+                const form = document.getElementById('loginForm');
+                if (form.checkValidity()) {
+                    form.dispatchEvent(new Event('submit'));
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure Control Room is hidden by default (clean any cached elements)
+            const existingControlCards = document.querySelectorAll('[id*="control"], [href*="control"], .admin-only');
+            existingControlCards.forEach(card => {
+                card.style.display = 'none';
+                card.remove();
+            });
+            console.log('🧹 Cleaned any cached Control Room elements');
+            
+            // Try session-based auto-login first
+            if (window.WolfSession && window.WolfSession.autoLogin((sessionData) => {
+                currentCoach = sessionData;
+                showHub();
+            })) {
+                return; // Session auto-login worked
+            }
+            
+            // Fallback to remember me auto-login
+            // DIRECT ACCESS - NO LOGIN
+            document.getElementById('hub').style.display = 'flex';
+            document.getElementById('loginScreen').style.display = 'none';
+        });
+
+        console.log('🐺 Wolf Pack Coaching Hub loaded - v20260325-1348');
+        console.log('🔍 Control Room should only show for admins (Melvin/Lorenzo)');
+
+        // REAL-TIME CLOUD SYNC WITH AIRTABLE
+        let cloudSyncEnabled = false;
+        
+        function initializeCrmEngine() {
+            if (typeof WolfCRM === 'undefined') {
+                console.log('📡 CRM Engine not available');
+                return;
+            }
+            
+            cloudSyncEnabled = true;
+            WolfCRM.setCoach(currentCoach);
+            
+            // Show sync status indicator
+            document.getElementById('syncStatus').style.display = 'block';
+            document.getElementById('syncStatus').textContent = '● Live Sync';
+            document.getElementById('syncStatus').style.color = '#22c55e';
+            
+            console.log('✅ CRM Engine initialized for coaching hub:', currentCoach.name);
+            
+            // Test connection
+            testCrmConnection();
+        }
+        
+        async function testCrmConnection() {
+            try {
+                await WolfCRM.loadPipelineData();
+                console.log('🔗 Airtable connection successful');
+                document.getElementById('syncStatus').textContent = '● Synced';
+            } catch (error) {
+                console.error('❌ Airtable connection failed:', error);
+                document.getElementById('syncStatus').textContent = '● Offline';
+                document.getElementById('syncStatus').style.color = '#ef4444';
+            }
+        }
     </script>
 </body>
 </html>
