@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐺 Wolf Pack CRM Pipeline - Real-time</title>
+    <script src="../wolf-crm-engine.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0E0E0F 0%, #1A1A1B 100%);
+            color: #E3E1DE;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .pipeline-header {
+            background: linear-gradient(90deg, #131313 0%, #0E0E0F 100%);
+            border-bottom: 3px solid #FDB80A;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(253, 184, 10, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #FDB80A;
+        }
+
+        .crm-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .crm-status.online {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: #22c55e;
+        }
+
+        .crm-status.offline {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #ef4444;
+        }
+
+        .crm-status.saving {
+            background: rgba(253, 184, 10, 0.2);
+            border: 1px solid rgba(253, 184, 10, 0.5);
+            color: #FDB80A;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online { background: #22c55e; }
+        .status-dot.offline { background: #ef4444; }
+        .status-dot.saving { background: #FDB80A; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .add-student-btn {
+            background: #FDB80A;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-student-btn:hover {
+            background: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        .search-bar {
+            position: relative;
+        }
+
+        .search-input {
+            background: #2A2A2B;
+            border: 1px solid #444;
+            color: #E3E1DE;
+            padding: 8px 35px 8px 12px;
+            border-radius: 6px;
+            width: 250px;
+            font-size: 14px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #FDB80A;
+        }
+
+        /* Pipeline Stages */
+        .pipeline-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            min-height: calc(100vh - 120px);
+            overflow-x: auto;
+        }
+
+        .pipeline-stage {
+            flex: 1;
+            min-width: 300px;
+            background: #1A1A1B;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #FDB80A;
+        }
+
+        .stage-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #FDB80A;
+        }
+
+        .stage-count {
+            background: #FDB80A;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .stage-drop-zone {
+            min-height: 400px;
+            border: 2px dashed transparent;
+            border-radius: 8px;
+            padding: 10px;
+            transition: all 0.3s;
+        }
+
+        .stage-drop-zone.drag-over {
+            border-color: #FDB80A;
+            background: rgba(253, 184, 10, 0.1);
+        }
+
+        /* Student Cards */
+        .student-card {
+            background: linear-gradient(135deg, #2A2A2B 0%, #1F1F20 100%);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: grab;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-card:hover {
+            border-color: #FDB80A;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(253, 184, 10, 0.2);
+        }
+
+        .student-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg) scale(1.02);
+            cursor: grabbing;
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .student-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #FDB80A;
+            margin: 0;
+        }
+
+        .student-coach {
+            font-size: 0.85rem;
+            color: #888;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .student-info {
+            margin: 8px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            border: 1px solid #555;
+            background: transparent;
+            color: #ccc;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            border-color: #FDB80A;
+            color: #FDB80A;
+        }
+
+        .save-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .save-indicator.visible {
+            opacity: 1;
+        }
+
+        .save-indicator.saving {
+            background: rgba(253, 184, 10, 0.2);
+            color: #FDB80A;
+        }
+
+        .save-indicator.saved {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .save-indicator.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #333;
+            border-top: 4px solid #FDB80A;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #1A1A1B;
+            border: 2px solid #FDB80A;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #FDB80A;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #888;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #E3E1DE;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 10px;
+            background: #2A2A2B;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #E3E1DE;
+            font-size: 14px;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #FDB80A;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #FDB80A;
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #FFD700;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #888;
+            border: 1px solid #444;
+        }
+
+        .btn-secondary:hover {
+            color: #E3E1DE;
+            border-color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pipeline-container {
+                flex-direction: column;
+            }
+            
+            .pipeline-stage {
+                min-width: unset;
+            }
+            
+            .search-input {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <div class="pipeline-header">
+        <div class="header-left">
+            <div class="header-title">🐺 Wolf Pack CRM Pipeline</div>
+            <div id="crmStatus" class="crm-status online">
+                <div class="status-dot online"></div>
+                <span>Connected</span>
+            </div>
+        </div>
+        <div class="header-controls">
+            <div class="search-bar">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search students...">
+            </div>
+            <button class="add-student-btn" onclick="openAddStudentModal()">
+                ➕ Add Student
+            </button>
+        </div>
+    </div>
+
+    <!-- Pipeline Container -->
+    <div class="pipeline-container">
+        <div class="pipeline-stage" data-stage="New Lead">
+            <div class="stage-header">
+                <div class="stage-title">🎯 New Leads</div>
+                <div class="stage-count" id="count-new-lead">0</div>
+            </div>
+            <div class="stage-drop-zone" data-stage="New Lead"></div>
+        </div>
+
+        <div class="pipeline-stage" data-stage="Contacted">
+            <div class="stage-header">
+                <div class="stage-title">📞 Contacted</div>
+                <div class="stage-count" id="count-contacted">0</div>
+            </div>
+            <div class="stage-drop-zone" data-stage="Contacted"></div>
+        </div>
+
+        <div class="pipeline-stage" data-stage="Qualified">
+            <div class="stage-header">
+                <div class="stage-title">✅ Qualified</div>
+                <div class="stage-count" id="count-qualified">0</div>
+            </div>
+            <div class="stage-drop-zone" data-stage="Qualified"></div>
+        </div>
+
+        <div class="pipeline-stage" data-stage="In Training">
+            <div class="stage-header">
+                <div class="stage-title">📚 In Training</div>
+                <div class="stage-count" id="count-in-training">0</div>
+            </div>
+            <div class="stage-drop-zone" data-stage="In Training"></div>
+        </div>
+
+        <div class="pipeline-stage" data-stage="Graduated">
+            <div class="stage-header">
+                <div class="stage-title">🎓 Graduated</div>
+                <div class="stage-count" id="count-graduated">0</div>
+            </div>
+            <div class="stage-drop-zone" data-stage="Graduated"></div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="addStudentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Student</h2>
+                <button class="close-btn" onclick="closeAddStudentModal()">&times;</button>
+            </div>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label class="form-label">Student Name</label>
+                    <input type="text" id="studentName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="studentEmail" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" id="studentPhone" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Initial Stage</label>
+                    <select id="studentStage" class="form-select">
+                        <option value="New Lead">New Lead</option>
+                        <option value="Contacted">Contacted</option>
+                        <option value="Qualified">Qualified</option>
+                        <option value="In Training">In Training</option>
+                        <option value="Graduated">Graduated</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assign Coach</label>
+                    <select id="studentCoach" class="form-select">
+                        <option value="">Auto-assign</option>
+                        <option value="Maurice">Maurice</option>
+                        <option value="Eray">Eray</option>
+                        <option value="Nabil">Nabil</option>
+                        <option value="Dilano">Dilano</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea id="studentNotes" class="form-textarea" placeholder="Initial notes about this student..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddStudentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentStudents = [];
+        let searchTerm = '';
+        let draggedStudent = null;
+        let currentCoach = { name: 'System', role: 'admin' }; // Will be set from login
+
+        // Initialize CRM system
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCRM();
+        });
+
+        function initializeCRM() {
+            console.log('🚀 Initializing Real-time CRM Pipeline...');
+            
+            // Set coach context (this would come from login)
+            WolfCRM.setCoach(currentCoach);
+            
+            // Setup event listeners
+            setupCRMEventListeners();
+            
+            // Setup drag & drop
+            setupDragAndDrop();
+            
+            // Setup search
+            setupSearch();
+            
+            // Load initial data
+            loadPipelineData();
+        }
+
+        function setupCRMEventListeners() {
+            // Data updates from other coaches
+            WolfCRM.on('data-updated', (event) => {
+                console.log('📊 Pipeline data updated:', event.source);
+                currentStudents = event.students;
+                renderPipeline();
+                updateStageCounts();
+            });
+
+            // Save status updates
+            WolfCRM.on('save-status', (event) => {
+                updateSaveIndicator(event.studentId, event.status, event.message);
+            });
+
+            // Connection status
+            WolfCRM.on('connection-status', (event) => {
+                updateConnectionStatus(event.online, event.error);
+            });
+        }
+
+        async function loadPipelineData() {
+            showLoading();
+            try {
+                const students = await WolfCRM.loadPipelineData();
+                currentStudents = students;
+                renderPipeline();
+                updateStageCounts();
+                console.log(`✅ Loaded ${students.length} students from cloud`);
+            } catch (error) {
+                console.error('❌ Failed to load pipeline:', error);
+                showError('Failed to load pipeline data. Check connection.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function renderPipeline() {
+            const stages = ['New Lead', 'Contacted', 'Qualified', 'In Training', 'Graduated'];
+            
+            stages.forEach(stage => {
+                const dropZone = document.querySelector(`.stage-drop-zone[data-stage="${stage}"]`);
+                const stageStudents = currentStudents.filter(student => 
+                    student.stage === stage && 
+                    (searchTerm === '' || student.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+                
+                dropZone.innerHTML = stageStudents.map(student => createStudentCard(student)).join('');
+            });
+        }
+
+        function createStudentCard(student) {
+            return `
+                <div class="student-card" draggable="true" data-student-id="${student.airtableId}">
+                    <div class="save-indicator" id="save-${student.airtableId}"></div>
+                    <div class="student-header">
+                        <h3 class="student-name">${student.name}</h3>
+                        <span class="student-coach">${student.coach || 'Unassigned'}</span>
+                    </div>
+                    <div class="student-info">
+                        ${student.email ? `📧 ${student.email}<br>` : ''}
+                        ${student.phone ? `📱 ${student.phone}<br>` : ''}
+                        ${student.sessionCount ? `📚 ${student.sessionCount} sessions` : '🆕 No sessions yet'}
+                    </div>
+                    ${student.notes ? `<div class="student-info">💭 ${student.notes.substring(0, 80)}${student.notes.length > 80 ? '...' : ''}</div>` : ''}
+                    <div class="student-actions">
+                        <button class="action-btn" onclick="editStudent('${student.airtableId}')">Edit</button>
+                        <button class="action-btn" onclick="addSession('${student.airtableId}')">+ Session</button>
+                        <button class="action-btn" onclick="deleteStudent('${student.airtableId}')">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupDragAndDrop() {
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('student-card')) {
+                    draggedStudent = e.target.dataset.studentId;
+                    e.target.classList.add('dragging');
+                }
+            });
+
+            document.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('student-card')) {
+                    e.target.classList.remove('dragging');
+                    draggedStudent = null;
+                }
+            });
+
+            document.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (e.target.classList.contains('stage-drop-zone')) {
+                    e.target.classList.add('drag-over');
+                }
+            });
+
+            document.addEventListener('dragleave', (e) => {
+                if (e.target.classList.contains('stage-drop-zone')) {
+                    e.target.classList.remove('drag-over');
+                }
+            });
+
+            document.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                const dropZone = e.target.closest('.stage-drop-zone');
+                if (dropZone && draggedStudent) {
+                    dropZone.classList.remove('drag-over');
+                    const newStage = dropZone.dataset.stage;
+                    await moveStudentToStage(draggedStudent, newStage);
+                }
+            });
+        }
+
+        async function moveStudentToStage(studentId, newStage) {
+            try {
+                console.log(`Moving student ${studentId} to ${newStage}`);
+                
+                // Auto-save the stage change
+                WolfCRM.scheduleAutoSave(studentId, {
+                    'Stage': newStage,
+                    'Last Contact': new Date().toISOString()
+                });
+                
+                // Update local state immediately for smooth UX
+                const student = currentStudents.find(s => s.airtableId === studentId);
+                if (student) {
+                    student.stage = newStage;
+                    renderPipeline();
+                    updateStageCounts();
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to move student:', error);
+                showError('Failed to update student stage');
+            }
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                renderPipeline();
+            });
+        }
+
+        function updateStageCounts() {
+            const stages = ['New Lead', 'Contacted', 'Qualified', 'In Training', 'Graduated'];
+            stages.forEach(stage => {
+                const count = currentStudents.filter(s => s.stage === stage).length;
+                const countElement = document.getElementById(`count-${stage.toLowerCase().replace(' ', '-')}`);
+                if (countElement) {
+                    countElement.textContent = count;
+                }
+            });
+        }
+
+        function updateSaveIndicator(studentId, status, message) {
+            const indicator = document.getElementById(`save-${studentId}`);
+            if (!indicator) return;
+
+            indicator.className = `save-indicator visible ${status}`;
+            indicator.textContent = message;
+
+            if (status === 'saved') {
+                setTimeout(() => {
+                    indicator.classList.remove('visible');
+                }, 2000);
+            }
+        }
+
+        function updateConnectionStatus(online, error) {
+            const statusElement = document.getElementById('crmStatus');
+            const dot = statusElement.querySelector('.status-dot');
+            const text = statusElement.querySelector('span');
+
+            if (online) {
+                statusElement.className = 'crm-status online';
+                dot.className = 'status-dot online';
+                text.textContent = 'Connected';
+            } else {
+                statusElement.className = 'crm-status offline';
+                dot.className = 'status-dot offline';
+                text.textContent = error ? `Offline: ${error}` : 'Offline';
+            }
+        }
+
+        // Modal functions
+        function openAddStudentModal() {
+            document.getElementById('addStudentModal').classList.add('active');
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('active');
+            document.getElementById('addStudentForm').reset();
+        }
+
+        // Form submission
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const studentData = {
+                name: document.getElementById('studentName').value,
+                email: document.getElementById('studentEmail').value,
+                phone: document.getElementById('studentPhone').value,
+                stage: document.getElementById('studentStage').value,
+                coach: document.getElementById('studentCoach').value || currentCoach.name,
+                notes: document.getElementById('studentNotes').value
+            };
+
+            try {
+                showLoading();
+                await WolfCRM.addStudent(studentData);
+                closeAddStudentModal();
+                showSuccess(`Student ${studentData.name} added successfully!`);
+            } catch (error) {
+                console.error('❌ Failed to add student:', error);
+                showError('Failed to add student: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showError(message) {
+            // TODO: Implement toast notifications
+            console.error('ERROR:', message);
+            alert('Error: ' + message);
+        }
+
+        function showSuccess(message) {
+            // TODO: Implement toast notifications
+            console.log('SUCCESS:', message);
+        }
+
+        // Student actions (placeholders for future implementation)
+        function editStudent(studentId) {
+            console.log('Edit student:', studentId);
+            // TODO: Implement edit modal
+        }
+
+        function addSession(studentId) {
+            console.log('Add session for student:', studentId);
+            // TODO: Implement session modal
+        }
+
+        async function deleteStudent(studentId) {
+            if (!confirm('Are you sure you want to delete this student? This cannot be undone.')) {
+                return;
+            }
+
+            try {
+                showLoading();
+                await WolfCRM.deleteStudent(studentId);
+                showSuccess('Student deleted successfully');
+            } catch (error) {
+                console.error('❌ Failed to delete student:', error);
+                showError('Failed to delete student: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+    </script>
+</body>
+</html>
